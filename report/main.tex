@@ -1,0 +1,553 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{newunicodechar}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{amsmath}
+
+% The offending character in the first argument
+% and a hyphen in the second argument!
+\newunicodechar{−}{-} 
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+        
+        \large{Optimization Techniques (MA-526)}\\
+        \Large{\textsc{\textbf{Variable Metric Method For Constrained Optimization}}}
+ 
+        \vspace{1cm}
+ 
+        \begin{table}[htbp]
+    	\centering
+    		\begin{tabular}{cc}
+             Anandita & 14074001 \\
+             Ayush Srivastava & 14075014\\
+             Babloo Kumar & 14074005 \\
+             Himanshu Agarwal & 14075031
+            \end{tabular}
+ 		\end{table}
+		
+		\small{Senior Undergraduates\\
+        Dept. of Computer Science and Engineering,\\
+        Indian Institute of Technology (BHU) Varanasi}
+ 			
+		\vspace{1cm}
+			
+        \small{Under the guidance of}
+        
+        \vspace{0.5cm}
+        
+        \large{\textbf{Dr. Debdas Ghosh}}
+        
+        \vspace{0.5cm}
+           
+        \normalsize{\textbf{Assistant Professor\\
+        Dept. of Mathematical Sciences,\\
+        Indian Institute of Technology (BHU) Varanasi}}
+        
+        \vspace{1cm}
+        
+        \includegraphics[width=0.4\textwidth]{iitbhu.png}
+        
+        \vspace{1cm}        
+    \end{center}
+\end{titlepage}
+
+\section{Introduction}
+
+In the unconstrained optimization problems the desirable improved convergence rate of Newton’s method could be approached by using suitable update formulas to approximate the matrix of second derivatives. Thus, with the wisdom of hindsight, it is not surprising that, as first shown by Garcia- Palomares and Mangasarian [4], similar constructions can be applied to approximate the quadratic portion of our Lagrangian subproblems. The idea of approximating $\nabla^2L$ using quasi-Newton update formulas that only require differences of gradients of the Lagrangian function was further developed by Han [5, 6] and Powell [7, 8]. The basic variable metric strategy proceeds as follows.
+
+\subsection{Description of the problem}
+P : 
+\begin{equation*}
+    \begin{aligned}
+        & \text{Minimize}
+        & & f(x) \\
+        & \text{Subject to}
+        & & h_k(x) = 0, \, k = 1, \ldots, K\\
+        &&& g_j(x) \geq 0, \, j = 1, \ldots, J\\
+    \end{aligned}
+\end{equation*}
+
+
+\subsection{Assumptions}
+The following assumptions are taken into account:
+\begin{itemize}
+    \item $f$, $g_i$ and $h_j$ are differentiable.
+    \item $g_i$ is continuous at $x^*$.
+\end{itemize}
+
+\section{Algorithm}
+
+Given initial estimates $x^0$ , $u^0$ , $v^0$ and a symmetric positive-definite matrix $H^0$.\newline
+
+\textbf{Step 1. }Solve the problem
+\begin{equation*}
+    \begin{aligned}
+        & \text{Minimize}
+        & & \nabla f(x^{(t)})^Td + \frac{1}{2}d^T\textbf{H}^{(t)}d \\
+        & \text{Subject to}
+        & & h_k(x^{(t)}) + \nabla h_k(x^{(t)})^Td = 0, \, k = 1, \ldots, K\\
+        &&& g_j(x^{(t)}) + \nabla g_j(x^{(t)})^Td \geq 0, \, j = 1, \ldots, J\\
+    \end{aligned}
+\end{equation*}
+
+\textbf{Step 2. }Select the step size $\alpha$ along $d^{(t)}$ and set $x^{(t+1)} = x^{(t)} + \alpha d^{(t)}$.
+
+\textbf{Step 3. }Check for convergence.
+
+\textbf{Step 4. }Update $\textbf{H}^{(t)}$ using the gradient difference
+\[\nabla_xL(x^{(t+1)}, u^{(t+1)}, v^{(t+1)}) - \nabla_xL(x^{(t)}, u^{(t+1)}, v^{(t+1)})\]
+in such a way that $\textbf{H}^{(t+1)}$ remains positive definite.\newline
+
+The key choices in the above procedure involve the update formula for $\textbf{H}^{(t)}$ and the manner of selecting $\alpha$ . Han [4, 5] considered the use of several well-known update formulas, particularly DFP. He also showed [4] that if the initial point is sufficiently close, then convergence will be achieved at a superlinear rate without a step-size procedure or line search by setting $\alpha = 1$. However, to assure convergence from arbitrary points, a line search is required. Specifically, Han [5] recommends the use of the penalty function
+\[P(x, R) = f(x) + R\{\sum_{k=1}^{K} |h_k(x)| - \sum_{j=1}^{J} min(0,g_j(x))\}\]
+to select $\alpha^*$ so that
+\[P(x(\alpha^*)) = \min_{0\leq\alpha\leq\delta} P(x^{(t)} + \alpha d^{(t)}), R)\]
+where R and $\delta$ are suitably selected positive numbers.\par
+Powell [7], on the other hand, suggests the use of the BFGS formula to-
+gether with a conservative check that ensures that $\textbf{H}^{(t)}$ remains positive definite. Thus, if
+\[z = x^{(t+1)} - x^{(t)}\]
+and
+\[y = \nabla_xL(x^{(t+1)}, u^{(t+1)}, v^{(t+1)}) - \nabla_xL(x^{(t)}, u^{(t+1)}, v^{(t+1)})\]
+Then define
+\[
+    \theta = 
+    \begin{cases}
+        1 & \text{if $z^Ty \geq 0.2z^T\textbf{H}^{(t)}z$}\\
+        \frac{0.8z^T\textbf{H}^{(t)}z}{z^T\textbf{H}^{(t)}z - z^Ty} & \text{otherwise}
+    \end{cases}
+\]
+and calculate
+\[w = \theta y + (1-\theta) \textbf{H}^{(t)}z\]
+Finally, this value of $w$ is used in the BFGS updating formula,
+\[\textbf{H}^{(t+1)} = \textbf{H}^{(t)}-\frac{\textbf{H}^{(t)}zz^T\textbf{H}^{(t)}}{z^T\textbf{H}^{(t)}z^T}+\frac{ww^T}{z^Tw} \]
+
+Note that the numerical value 0.2 is selected empirically and that the normal
+BFGS update is usually stated in terms of $y$ rather than $w$.\par
+On the basis of empirical testing, Powell [8] proposed that the step-size
+procedure be carried out using the penalty function
+\[P(x, \mu, \sigma) = f(x) + \sum_{k=1}^{K} \mu_k|h_k(x)| - \sum_{j=1}^{J} \sigma_j min(0,g_j(x))\]
+where for the first iteration
+\[\mu_k = |v_k|, \sigma_j = |u_j|\]
+and for all subsequent iterations t
+\[\mu_k^{(t)} = max(|v_k^{(t)}|,\frac{1}{2}(\mu_k^{(t-1)} + |v_k^{(t)}|))\]
+\[\sigma_j^{(t)} = max(|u_j^{(t)}|,\frac{1}{2}(\sigma_j^{(t-1)} + |u_j^{(t)}|))\]
+The line search could be carried out by selecting the largest value of $\alpha , 0 \leq \alpha \leq1$, such that
+\[P(x(\alpha)) < P(x(0))\]
+However, Powell [8] prefers the use of quadratic interpolation to generate a
+sequence of values of $\alpha_k$ until the more conservative condition
+\[P(x(\alpha_k)) \leq P(x(0)) + 0.1\alpha_k\frac{dP}{d\alpha}(x(0))\]
+is met. It is interesting to note, however, that examples have been found for
+which the use of Powell’s heuristics can lead to failure to converge [9]. Fur-
+ther refinements of the step-size procedure have been reported [10], but these
+details are beyond the scope of the present treatment.\par
+We illustrate the use of a variant of the constrained variable metric (CVM)
+method using update (10.11), penalty function (10.12), and a simple quadratic
+interpolation-based step-size procedure.
+
+
+\section{Execution on Test Problems}
+
+The code can be found in Appendix in Section 6.
+
+\section{Conclusion}
+
+It should be emphasized that the available convergence results assume that the penalty function parameters remain unchanged and that exact line searches are used. Powell’s modifications and the use of approximate searches thus amount to useful heuristics justified solely by numerical experimentation. It is of interest that as reported by Bartholomew-Biggs [11], a code implementing this approach (OPRQ) has been quite successful in solving a number of practical problems, including one with as many as 79 variables and 190 constraints. This gives further support to the still sparse but growing body of empirical evidence suggesting the power of CVM approaches
+
+\section{References}
+
+[4] Garcia-Palomares, U. M., and O. L. Mangasarian, ‘‘Superlinearly Convergent
+Quasi-Newton Algorithms for Nonlinearly Constrained Optimization Problem,’’
+Math. Prog., 11, 1–13 (1976).
+\newline\newline
+[5] Han, S. P., ‘‘Superlinearly Convergent Variable Metric Algorithms for General Nonlinear Programming Problems,’’ Math. Prog., 11, 263–282 (1976).
+\newline\newline
+[6] Han, S. P., ‘‘A Globally Convergent Method for Nonlinear Programming,’’ J. Opt. Theory Appl. 22, 297–309 (1977).
+\newline\newline
+[7] Powell, M. J. D., ‘‘A Fast Algorithm for Nonlinearly Constrained Optimization Calculations,’’ in Numerical Analysis, Dundee 1977 (G. A. Watson, Ed.), Lecture Notes in Mathematics No. 630, Springer-Verlag, New York, 1978.
+\newline\newline
+[8] Powell, M. J. D., ‘‘Algorithms for Nonlinear Functions that Use Lagrangian Functions,’’ Math. Prog., 14, 224–248 (1978)
+\newline\newline
+[9] Chamberlain, R. M., ‘‘Some Examples of Cycling in Variable Metric Methods for Constrained Minimization,’’ Math. Prog., 16, 378–383 (1979).
+\newline \newline
+[10] Mayne, D. Q., ‘‘On the Use of Exact Penalty Functions to Determine Step Length in Optimization Algorithms,’’ in Numerical Analysis, Dundee, 1979 (G. A. Watson, Ed.), Lecture Notes in Mathematics No. 773, Springer-Verlag, New York, 1980.
+\newline \newline
+[11] Bartholemew-Biggs, M. C., ‘‘Recursive Quadratic Programming Based on Penalty Functions for Constrained Minimization,’’ in Nonlinear Optimization: Theory and Algorithms (L. C. W. Dixon, E. Spedicato, and G. P. Szego, Eds.), Birkhauser, Boston, 1980.
+
+\section{Appendix}
+In this section we present our implementation of the Mental Poker using socket programming in Python 3.
+
+%New colors defined below
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+%Code listing style named "mystyle"
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},   commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\footnotesize,
+  breakatwhitespace=false,         
+  breaklines=true,                 
+  captionpos=b,                    
+  keepspaces=true,                 
+  numbers=left,                    
+  numbersep=5pt,                  
+  showspaces=false,                
+  showstringspaces=false,
+  showtabs=false,                  
+  tabsize=2
+}
+
+%"mystyle" code listing set
+\lstset{style=mystyle}
+
+%Python code highlighting
+\begin{lstlisting}[language=Python, caption=CVM.py]
+
+## Without third party
+
+import socket
+import pickle
+import _thread
+import time
+import random
+from helpers import *
+
+## Alice
+
+def Main():
+    ## Alice's server for initial reshuffling
+    ## Set up server to connect to Bob
+    server_alice = setServer('127.0.0.1', 5006, 2)
+
+    print("Alice is up for the game.")
+    print("Waiting for Bob to connect...\n")
+
+    ## Connect with Bob to start shuffling the deck
+    connection_from_bob, address_bob = server_alice.accept()
+    print("Connected to Bob.\n")
+
+    ## Set up initial game parameters
+    num_cards = random.randrange(10, 53, 2)
+    alice_key = 1
+
+    ## Deck has even number of cards from 10 to 52
+    deck = random.sample(range(1, 53), num_cards)
+    print("A deck of ", num_cards, " cards received.")
+
+    ## Deck encryption by Alice
+    for i in range(num_cards):
+        deck[i] = encryptCard(deck[i], alice_key)
+    
+    ## Shuffle deck    
+    random.shuffle(deck)
+    print("Deck encrypted and shuffled.\n")
+
+    ## Send deck to Bob
+    sendDeck(connection_from_bob, address_bob, deck)
+    print("Deck sent to Bob.\n")
+
+    ## Receive encrypted and shuffled deck from Bob
+    shuffled_deck_bob = connection_from_bob.recv(4096)
+    shuffled_deck_bob = pickle.loads(shuffled_deck_bob)
+    print("Deck received from Bob.")
+
+    ## Decrypt deck before individual encryption
+    for i in range(num_cards):
+        shuffled_deck_bob[i] = decryptCard(shuffled_deck_bob[i], alice_key)
+
+    print("Deck decrypted.\n")
+
+
+    ## This is used in final verification phase
+    final_deck_before_individual_keys = list()
+    for i in range(num_cards):
+        final_deck_before_individual_keys.append(shuffled_deck_bob[i])
+
+    print("Getting individual keys...")
+    alice_individual_keys = random.sample(range(1, 60), num_cards)
+    ## Encrypt each card with its individual key
+    for i in range(num_cards):
+        shuffled_deck_bob[i] = encryptCard(shuffled_deck_bob[i], alice_individual_keys[i])
+    print("Deck encrypted by individual keys.\n")
+
+    ## Send deck to Bob for individual encryption
+    sendDeck(connection_from_bob, address_bob, shuffled_deck_bob)
+    print("Deck sent to Bob.\n")
+
+    ## Receive final deck from Bob
+    shuffled_encrypted_cards = connection_from_bob.recv(4096)
+    shuffled_encrypted_cards = pickle.loads(shuffled_encrypted_cards)
+    print("Deck received from Bob.")
+
+    ## Distribute cards in half
+    print("Distributing cards...\n")
+
+    alice_cards = []
+    alice_cards_keys1 = []
+    bob_cards_keys2 = []
+
+    ## Alice gets even indexed cards
+    for i in range(0, num_cards, 2):
+        alice_cards.append(shuffled_encrypted_cards[i])
+        alice_cards_keys1.append(alice_individual_keys[i])
+    
+    ## Bob gets odd indexed cards
+    for i in range(1, num_cards, 2):
+        bob_cards_keys2.append(alice_individual_keys[i])
+
+    print("A hand of ",num_cards//2," cards received.\n")
+    
+    ## We need individual keys of both players for total decryption
+    print("Sending individual keys of Bob's cards...\n")
+    sendDeck(connection_from_bob, address_bob, bob_cards_keys2)
+    print("Sent.")
+
+    print("Requesting individual keys from Bob...")
+    alice_cards_keys2 = connection_from_bob.recv(4096)
+    alice_cards_keys2 = pickle.loads(alice_cards_keys2)
+    print("Individual keys Received.\n")
+
+    ## Decrypt to see the hand you are dealt
+    print("Decrypting your cards...\n")
+    alice_cards_decrypted = [ 0 for i in range(num_cards // 2) ]
+    for i in range(num_cards//2):
+        alice_cards_decrypted[i] = decryptCard(decryptCard(alice_cards[i], alice_cards_keys1[i]), alice_cards_keys2[i])
+
+    print("Your cards are : ")
+    print(alice_cards_decrypted)
+    print("\n")
+
+    print("We can start the game now..")
+
+    sum_cards_alice = sum(alice_cards_decrypted)
+    print("Sum of your cards: ", sum_cards_alice)
+    
+    ## Receive Bob's sum of cards
+    sum_cards_bob = int(connection_from_bob.recv(1024).decode('ascii'))
+    print("Sum of Bob's cards: ", sum_cards_bob)
+
+    ## Send your sum to Bob
+    sendKey(connection_from_bob, str(sum_cards_alice))
+
+    if(sum_cards_alice > sum_cards_bob):
+        print("Congrats! You won!")
+    elif(sum_cards_alice == sum_cards_bob):
+        print("It's a Draw!")
+    else:
+        print("Alas! Bob wins!")
+
+    print("Verification Phase...")
+
+    print("Sending original key to Bob...")
+    ## Send you own key to Bob for verification
+    sendKey(connection_from_bob, str(alice_key))
+    
+    print("Receiving original key from Bob...")
+    bob_key = int(connection_from_bob.recv(4096).decode('ascii'))
+
+    sum_cards_bob_verified = 0
+    for i in range(1, num_cards, 2):
+        sum_cards_bob_verified = sum_cards_bob_verified + decryptCard(final_deck_before_individual_keys[i], bob_key)
+    
+    print("Bob's card value: ", sum_cards_bob_verified)
+    connection_from_bob.close()
+    server_alice.close()
+
+
+if __name__ == '__main__':
+    Main()
+
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=bob.py]
+import socket
+import pickle
+import random
+import time
+from helpers import *
+
+## Bob
+
+def Main():
+    ## Alice's server for initial reshuffling
+    host_alice = '127.0.0.1'
+    port_alice = 5006
+    client_alice = socket.socket()
+    client_alice.connect((host_alice, port_alice))
+
+    print("Connected to Alice.\n")
+
+    shuffled_deck_alice = client_alice.recv(4096)
+    shuffled_deck_alice = pickle.loads(shuffled_deck_alice)
+
+    num_cards = len(shuffled_deck_alice)
+    bob_key = 2
+    print("A deck of ",num_cards," cards received from Alice.")
+
+    ## Deck encryption by bob
+    deck_bob = list()
+    for i in range(num_cards):
+        deck_bob.append(encryptCard(shuffled_deck_alice[i], bob_key))
+
+    ## Shuffle
+    random.shuffle(deck_bob)
+
+    ## This is used in final verification phase
+    final_deck_before_individual_keys = list()
+    for i in range(num_cards):
+        final_deck_before_individual_keys.append(decryptCard(deck_bob[i], bob_key))
+
+    ## Send encrypted deck to Alice
+    print("Deck encrypted and shuffled.\n")
+    shuffled_deck_bob = pickle.dumps(deck_bob, -1)
+    client_alice.sendall(shuffled_deck_bob)
+    print("Deck sent back to Alice.\n")
+
+    ## Receive individually encrypted deck
+    shuffled_deck_bob = client_alice.recv(4096)
+    shuffled_deck_bob = pickle.loads(shuffled_deck_bob)
+    print("Deck received from Alice.")
+
+    for i in range(num_cards):
+        shuffled_deck_bob[i] = decryptCard(shuffled_deck_bob[i], bob_key)
+    
+    print("Deck decrypted.\n")
+
+    print("Getting individual keys...")
+    bob_individual_keys = random.sample(range(1, 60), num_cards)
+    for i in range(num_cards):
+        shuffled_deck_bob[i] = encryptCard(shuffled_deck_bob[i], bob_individual_keys[i])
+    print("Deck encrypted by individual keys.\n")
+
+    shuffled_encrypted_cards = pickle.dumps(shuffled_deck_bob, -1)
+    client_alice.sendall(shuffled_encrypted_cards)
+    print("Deck sent to Alice.\n")
+
+    print("Distributing cards...\n")
+
+    ## Receive Alice's keys for Bob's cards
+    bob_cards_keys2 = client_alice.recv(4096)
+    bob_cards_keys2 = pickle.loads(bob_cards_keys2)
+
+    bob_cards = []
+    bob_cards_keys1 = []
+    alice_cards_keys2 = []
+
+    for i in range(1,num_cards,2):
+        bob_cards.append(shuffled_deck_bob[i])
+        bob_cards_keys1.append(bob_individual_keys[i])
+    
+    for i in range(0,num_cards,2):
+        alice_cards_keys2.append(bob_individual_keys[i])
+
+    print("A hand of ",num_cards//2," cards received.\n")
+    print("Individual keys received.\n")
+    print("Sending individual keys of Alice's cards...\n")
+
+    alice_cards_keys2 = pickle.dumps(alice_cards_keys2, -1)
+    client_alice.sendall(alice_cards_keys2)
+    print('Sent.\n')
+
+    print("Decrypting your cards...\n")
+    bob_cards_decrypted = [0 for i in range(num_cards//2)]
+    for i in range(num_cards//2):
+        bob_cards_decrypted[i] = decryptCard(decryptCard(bob_cards[i], bob_cards_keys1[i]), bob_cards_keys2[i])
+
+    print("Your cards are : ")
+    print(bob_cards_decrypted)
+    print("\n")
+
+    print("We can start the game now..")
+
+    sum_cards_bob = sum(bob_cards_decrypted)
+    print("Sum of your cards: ", sum_cards_bob)
+    
+    ## Send your sum to Alice
+    sendKey(client_alice, str(sum_cards_bob))
+
+    ## Receive Alice's sum of cards
+    sum_cards_alice = int(client_alice.recv(1024).decode('ascii'))
+    print("Sum of Alice's cards: ", sum_cards_alice)
+
+    if(sum_cards_alice < sum_cards_bob):
+        print("Congrats! You won!")
+    elif(sum_cards_alice == sum_cards_bob):
+        print("It's a Draw!")
+    else:
+        print("Alas! Alice wins!")
+
+    print("Verification Phase...")
+    
+    print("Receiving original key from Alice...")
+    alice_key = int(client_alice.recv(1024).decode('ascii'))
+
+    print("Sending original key to Alice...")
+
+    ## Send you own key to Bob for verification
+    sendKey(client_alice, str(bob_key))
+
+    sum_cards_alice_verified = 0
+    for i in range(0, num_cards, 2):
+        sum_cards_alice_verified = sum_cards_alice_verified + decryptCard(final_deck_before_individual_keys[i], alice_key)
+    
+    print("Alice's card value: ", sum_cards_alice_verified)
+    
+    client_alice.close()
+   
+
+if __name__ == '__main__':
+    Main()
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=helpers.py]
+import socket
+import pickle
+
+## A commutative encryption function
+def encryptCard(val, key):
+    return val ^ key
+
+
+## Complementary decryption function
+def decryptCard(val, key):
+    return val ^ key
+
+
+## Send Deck to connection
+def sendDeck(connection, address, deck):
+    data = pickle.dumps(deck, -1)
+    connection.sendall(data)
+
+
+## Set up server for messages
+def setServer(host, port, num_connections):
+    server = socket.socket()
+    server.bind((host, port))
+    server.listen(num_connections)
+    return server
+
+
+## Connect to server for messages
+def connectToServer(host, port):
+    client_sock = socket.socket()
+    client_sock.connect((host, port))
+    return client_sock
+
+
+def sendKey(connection, key):
+    connection.send(key.encode('ascii'))
+\end{lstlisting}
+
+
+\end{document}
